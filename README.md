@@ -13,7 +13,7 @@ Displays:
 ```html
 <iframe 
     src="https://fatalmistake02.github.io/beatleader-embed/beatleader-embed.html?player=playerID" 
-    width="440" height="90" frameborder="0">
+    width="320" height="106" frameborder="0">
 </iframe>
 ```
 Replace playerID with BeatLeader player ID
