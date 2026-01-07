@@ -182,10 +182,7 @@
       `#${player.rank} ${change(yesterday.rank - player.rank, false)}`;
 
     document.getElementById('player-pp').innerHTML =
-      `${player.pp.toFixed(2)} ${change(
-        (player.pp - yesterday.pp).toFixed(2),
-        true
-      )}`;
+      `${player.pp.toFixed(2)}`;
 
     const latest = scores?.data?.[0];
 if (!latest) return;
