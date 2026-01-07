@@ -12,7 +12,7 @@ Displays:
 
 ```html
 <iframe 
-    src="https://fatalmistake02.github.io/beatleader-embed.html?player=playerID" 
+    src="https://fatalmistake02.github.io/beatleader-embed/beatleader-embed.html?player=playerID" 
     width="440" height="90" frameborder="0">
 </iframe>
 ```
