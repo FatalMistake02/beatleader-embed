@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BeatLeader Embed</title>
+
+<style>
+  body {
+    margin: 0;
+    background: transparent;
+  }
+
+  #beatleader {
+    width: 300px;
+    padding: 14px;
+    border-radius: 16px;
+    background: #0f1115;  /* Background color */
+    color: #fff;          /* Main text color */
+    font-family: system-ui, sans-serif;
+    cursor: pointer;
+  }
+
+  #beatleader-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+
+  #player-side {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    min-width: 120px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    opacity: 0.7;
+  }
+
+  .stat-value {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+
+  #song-side {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  #song-cover {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+  }
+
+  #song-info {
+    min-width: 0;
+  }
+
+  #song-name {
+  font-weight: 600;
+  font-size: 14px;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;     
+  overflow: hidden;           
+  text-overflow: ellipsis;    
+  line-height: 1.2em;         
+  max-width: 220px;           
+  white-space: normal;
+}
+
+
+  #song-pp {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+  #song-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+#latest-label {
+  font-size: 11px;
+  opacity: 0.6;
+  font-weight: 500;
+}
+
+#song-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+  .positive { color: #3ddc84; }
+  .negative { color: #ff5c5c; }
+  .neutral  { color: #999; }
+</style>
+</head>
+
+<body>
+
+<div id="beatleader" onclick="window.open('https://beatleader.com/u/xxx','_blank')">  <!-- Replace xxx with BeatLeader player ID -->
+  <div id="beatleader-content">
+    <div id="player-side">
+      <div>
+        <div class="stat-label">Global Rank</div>
+        <div class="stat-value" id="player-rank">Loading…</div>
+      </div>
+      <div>
+        <div class="stat-label">Total PP</div>
+        <div class="stat-value" id="player-pp">Loading…</div>
+      </div>
+    </div>
+
+    <div id="song-side">
+  <div id="latest-label">Latest Play</div>
+
+  <div id="song-row">
+    <img id="song-cover" />
+    <div id="song-info">
+      <div id="song-name">Loading…</div>
+      <div id="song-pp"></div>
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>
+
+<script>
+  const playerId = 'xxx';  // Replace xxx with BeatLeader player ID
+  const proxy = 'https://corsproxy.io/?';
+
+  const urls = {
+    player: proxy + `https://api.beatleader.xyz/player/${playerId}`,
+    history: proxy + `https://api.beatleader.xyz/player/${playerId}/history`,
+    scores: proxy + `https://api.beatleader.xyz/player/${playerId}/scores?sortBy=date&order=desc&count=1`
+  };
+
+  async function safeFetch(url) {
+    try {
+      const r = await fetch(url);
+      const t = await r.text();
+      if (!t.startsWith('{') && !t.startsWith('[')) throw 0;
+      return JSON.parse(t);
+    } catch {
+      return null;
+    }
+  }
+
+  function change(value, higherIsBetter = true) {
+    if (!value || value === 0) return `<span class="neutral">(0)</span>`;
+    const good = (value > 0 && higherIsBetter) || (value < 0 && !higherIsBetter);
+    return `<span class="${good ? 'positive' : 'negative'}">
+      (${value > 0 ? '+' : ''}${value})
+    </span>`;
+  }
+  (async () => {
+    const [player, history, scores] = await Promise.all([
+      safeFetch(urls.player),
+      safeFetch(urls.history),
+      safeFetch(urls.scores)
+    ]);
+
+    if (!player || !history || history.length < 2) return;
+
+    const yesterday = history[0];
+
+    document.getElementById('player-rank').innerHTML =
+      `#${player.rank} ${change(yesterday.rank - player.rank, false)}`;
+
+    document.getElementById('player-pp').innerHTML =
+      `${player.pp.toFixed(2)} ${change(
+        (player.pp - yesterday.pp).toFixed(2),
+        true
+      )}`;
+
+    const latest = scores?.data?.[0];
+if (!latest) return;
+
+// Song info
+const song = latest.leaderboard.song;
+const difficulty = latest.leaderboard.difficulty;
+
+document.getElementById('song-cover').src = song.coverImage;
+document.getElementById('song-name').innerText =
+    song.name + (song.subName ? ' ' + song.subName : '');
+
+// Play PP if ranked. If no PP, show unranked.
+let ppText = latest.pp > 0 ? `${latest.pp.toFixed(2)}pp` : 'Unranked';
+
+// Stars if ranked
+if (difficulty.stars && difficulty.stars > 0) {
+    ppText += ` • ${difficulty.stars.toFixed(2)}★`;
+}
+
+document.getElementById('song-pp').innerText = ppText;
+  })();
+</script>
+
+</body>
+</html>
